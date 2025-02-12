@@ -6,11 +6,13 @@
   "packages": {
     "hello-react": {
       "path": "hello-react",
-      "release-type": "node"
+      "release-type": "node",
+      "extra-files": ["test.txt"]
     },
     "hello-rust": {
       "path": "hello-rust",
-      "release-type": "rust"
+      "release-type": "rust",
+      "extra-files": ["test.txt"]
     }
   },
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
