@@ -1,0 +1,38 @@
+name: Close Linear Tickets on Merge
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  close-linear-tickets:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract commit messages
+        id: extract-commits
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const commits = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+            });
+            return commits.data.map(commit => commit.commit.message).join('\n');
+      - name: Parse Linear Ticket IDs
+        id: parse-tickets
+        run: |
+          TICKET_IDS=$(echo "${{ steps.extract-commits.outputs.result }}" | grep -Eo '[A-Z]+-[0-9]+' | sort -u)
+          echo "TICKET_IDS=$TICKET_IDS" >> $GITHUB_ENV
+      - name: Close Linear Tickets
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+        run: |
+          for TICKET_ID in $TICKET_IDS; do
+            curl --request POST \
+              --url 'https://api.linear.app/graphql' \
+              --header "Authorization: Bearer $LINEAR_API_KEY" \
+              --header 'Content-Type: application/json' \
+              --data "{\"query\": \"mutation { issueUpdate(id: \\\"$TICKET_ID\\\", input: { stateId: \\\"<DONE_STATE_ID>\\\" }) { success } }\"}"
+          done
