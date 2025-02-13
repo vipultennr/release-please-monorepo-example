@@ -23,7 +23,7 @@ jobs:
       - name: Parse Linear Ticket IDs
         id: parse-tickets
         run: |
-          TICKET_IDS=$(echo "${{ steps.extract-commits.outputs.result }}" | grep -Eo '[A-Z]+-[0-9]+' | sort -u)
+          TICKET_IDS=$(echo ${{ steps.extract-commits.outputs.result }} | grep -Eo '[A-Z]+-[0-9]+' | sort -u)
           echo "TICKET_IDS=$TICKET_IDS" >> $GITHUB_ENV
       - name: Close Linear Tickets
         env:
